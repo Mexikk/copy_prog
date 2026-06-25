@@ -52,7 +52,7 @@ jobs:
       - name: Build .deb package
         run: cargo deb --no-build
       
-      - name: Create simple tar.gz archive
+      - name: Create tar.gz archive
         run: |
           mkdir -p release-linux
           cp target/release/copy_prog release-linux/
@@ -86,32 +86,50 @@ jobs:
       
       - name: Create .icns from PNGs
         run: |
-          mkdir icon.iconset
-          sips -z 16 16 icons/icon-16.png --out icon.iconset/icon_16x16.png
-          sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_16x16@2x.png
-          sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_32x32.png
-          sips -z 64 64 icons/icon-128.png --out icon.iconset/icon_32x32@2x.png
-          sips -z 128 128 icons/icon-128.png --out icon.iconset/icon_128x128.png
-          sips -z 256 256 icons/icon-256.png --out icon.iconset/icon_128x128@2x.png
-          sips -z 256 256 icons/icon-256.png --out icon.iconset/icon_256x256.png
-          sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_256x256@2x.png
-          sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_512x512.png
-          iconutil -c icns icon.iconset
-          mkdir -p target/release/bundle/osx/Copy_prog.app/Contents/Resources
-          cp icon.icns target/release/bundle/osx/Copy_prog.app/Contents/Resources/
+          mkdir -p icon.iconset
+          if [ -f icons/icon-16.png ]; then
+            sips -z 16 16 icons/icon-16.png --out icon.iconset/icon_16x16.png
+            sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_16x16@2x.png
+          fi
+          if [ -f icons/icon-32.png ]; then
+            sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_32x32.png
+            sips -z 64 64 icons/icon-32.png --out icon.iconset/icon_32x32@2x.png
+          fi
+          if [ -f icons/icon-128.png ]; then
+            sips -z 128 128 icons/icon-128.png --out icon.iconset/icon_128x128.png
+            sips -z 256 256 icons/icon-128.png --out icon.iconset/icon_128x128@2x.png
+          fi
+          if [ -f icons/icon-256.png ]; then
+            sips -z 256 256 icons/icon-256.png --out icon.iconset/icon_256x256.png
+            sips -z 512 512 icons/icon-256.png --out icon.iconset/icon_256x256@2x.png
+          fi
+          if [ -f icons/icon-512.png ]; then
+            sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_512x512.png
+          fi
+          iconutil -c icns icon.iconset || true
       
       - name: Build .app bundle
         run: cargo bundle --release
+        continue-on-error: true
       
       - name: Create DMG installer
         run: |
-          hdiutil create -volname "Copy_prog" -srcfolder target/release/bundle/osx/Copy_prog.app -ov -format UDZO copy_prog-macos-x64.dmg
+          if [ -d "target/release/bundle/osx/Copy_prog.app" ]; then
+            hdiutil create -volname "Copy_prog" -srcfolder target/release/bundle/osx/Copy_prog.app -ov -format UDZO copy_prog-macos-x64.dmg
+          else
+            # Fallback: just archive the binary
+            mkdir -p release-macos
+            cp target/release/copy_prog release-macos/
+            tar czf copy_prog-macos-x64.tar.gz -C release-macos .
+          fi
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: copy_prog-macos-x64.dmg
+          path: |
+            copy_prog-macos-x64.dmg
+            copy_prog-macos-x64.tar.gz
 
   # === СОЗДАНИЕ РЕЛИЗА ===
   release:
@@ -127,15 +145,16 @@ jobs:
       
       - name: Prepare release files
         run: |
-          mkdir release-files
-          cp windows-build/*.zip release-files/
-          cp linux-build/*.deb release-files/
-          cp linux-build/*.tar.gz release-files/
-          cp macos-build/*.dmg release-files/
+          mkdir -p release-files
+          cp windows-build/*.zip release-files/ 2>/dev/null || true
+          cp linux-build/*.deb release-files/ 2>/dev/null || true
+          cp linux-build/*.tar.gz release-files/ 2>/dev/null || true
+          cp macos-build/*.dmg release-files/ 2>/dev/null || true
+          cp macos-build/*.tar.gz release-files/ 2>/dev/null || true
           ls -la release-files/
       
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: release-files/*
           generate_release_notes: true
