@@ -6,74 +6,48 @@ on:
       - 'v*'
 
 jobs:
-  # === СБОРКА ДЛЯ WINDOWS ===
   build-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      - name: Build Windows .exe
-        run: cargo build --release
-      - name: Create ZIP archive
-        shell: pwsh
-        run: |
-          Compress-Archive -Path target/release/copy_prog.exe -DestinationPath copy_prog-windows-x64.zip
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - shell: pwsh
+        run: Compress-Archive -Path target/release/copy_prog.exe -DestinationPath copy_prog-windows-x64.zip
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: copy_prog-windows-x64.zip
 
-  # === СБОРКА ДЛЯ LINUX (tar.gz + .deb) ===
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install dependencies
-        run: |
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
           sudo apt-get update
           sudo apt-get install -y libssl-dev pkg-config
-      - name: Install cargo-deb
-        run: cargo install cargo-deb
-      - name: Build binary
-        run: cargo build --release
-      - name: Build .deb package
-        run: |
-          cargo deb --no-build --no-strip
-          echo "--- DEB files created ---"
-          ls -la target/debian/
-      - name: Create tar.gz archive
-        run: |
+      - run: cargo build --release
+      - run: |
           mkdir -p release-linux
           cp target/release/copy_prog release-linux/
           cp README.md release-linux/ 2>/dev/null || true
           cp LICENSE release-linux/ 2>/dev/null || true
           cd release-linux
           tar czf ../copy_prog-linux-x64.tar.gz *
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: |
-            target/debian/*.deb
-            copy_prog-linux-x64.tar.gz
+          path: copy_prog-linux-x64.tar.gz
 
-  # === СБОРКА ДЛЯ MACOS ===
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install cargo-bundle
-        run: cargo install cargo-bundle
-      - name: Build binary
-        run: cargo build --release
-      - name: Create .icns from PNGs
-        run: |
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-bundle
+      - run: cargo build --release
+      - run: |
           mkdir -p icon.iconset
           [ -f icons/icon-16.png ] && sips -z 16 16 icons/icon-16.png --out icon.iconset/icon_16x16.png
           [ -f icons/icon-32.png ] && sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_16x16@2x.png
@@ -85,11 +59,9 @@ jobs:
           [ -f icons/icon-512.png ] && sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_256x256@2x.png
           [ -f icons/icon-512.png ] && sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_512x512.png
           iconutil -c icns icon.iconset || true
-      - name: Build .app bundle
-        run: cargo bundle --release
+      - run: cargo bundle --release
         continue-on-error: true
-      - name: Create DMG installer
-        run: |
+      - run: |
           if [ -d "target/release/bundle/osx/Copy_prog.app" ]; then
             hdiutil create -volname "Copy_prog" -srcfolder target/release/bundle/osx/Copy_prog.app -ov -format UDZO copy_prog-macos-x64.dmg
           else
@@ -97,15 +69,13 @@ jobs:
             cp target/release/copy_prog release-macos/
             tar czf copy_prog-macos-x64.tar.gz -C release-macos .
           fi
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: |
             copy_prog-macos-x64.dmg
             copy_prog-macos-x64.tar.gz
 
-  # === СОЗДАНИЕ РЕЛИЗА ===
   release:
     needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
@@ -113,20 +83,14 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-      - name: Prepare release files
-        run: |
+      - uses: actions/download-artifact@v4
+      - run: |
           mkdir -p release-files
           cp windows-build/*.zip release-files/ 2>/dev/null || true
-          cp linux-build/*.deb release-files/ 2>/dev/null || true
           cp linux-build/*.tar.gz release-files/ 2>/dev/null || true
           cp macos-build/*.dmg release-files/ 2>/dev/null || true
           cp macos-build/*.tar.gz release-files/ 2>/dev/null || true
-          echo "--- Files to release ---"
-          ls -la release-files/
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           files: release-files/*
           generate_release_notes: true

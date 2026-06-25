@@ -20,7 +20,6 @@
 |----|------|--------|
 | 🖥️ **Windows** | `copy_prog-windows-x64.zip` | [Скачать](https://github.com/Mexikk/copy_prog/releases/latest/download/copy_prog-windows-x64.zip) |
 | 🐧 **Linux (tar.gz)** | `copy_prog-linux-x64.tar.gz` | [Скачать](https://github.com/Mexikk/copy_prog/releases/latest/download/copy_prog-linux-x64.tar.gz) |
-| 🐧 **Linux (DEB)** | `copy_prog_1.0.0_amd64.deb` | [Скачать](https://github.com/Mexikk/copy_prog/releases/latest/download/copy-prog_1.0.0_amd64.deb) |
 | 🍎 **macOS** | `copy_prog-macos-x64.dmg` | [Скачать](https://github.com/Mexikk/copy_prog/releases/latest/download/copy_prog-macos-x64.dmg) |
 
 **Как использовать:**
@@ -36,13 +35,6 @@ wget https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-linu
 tar xzf copy_prog-linux-x64.tar.gz
 chmod +x copy_prog
 ./copy_prog
-```
-
-🐧 **Linux (DEB) — Ubuntu/Debian:**
-```bash
-wget https://github.com/Mexikk/copy-prog/releases/latest/download/copy-prog_1.0.0_amd64.deb
-sudo dpkg -i copy-prog_1.0.0_amd64.deb
-copy_prog
 ```
 
 🍎 **macOS:**
