@@ -19,7 +19,7 @@
 | ОС | Файл | Ссылка |
 |----|------|--------|
 | 🖥️ **Windows** | `copy_prog-windows-x64.zip` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-windows-x64.zip) |
-| 🐧 **Linux (tar.gz)** | `copy_prog-linux-x64.tar.gz` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-linux-x64.tar.gz) |
+| 🐧 **Linux (AppImage)** 🏆 | `copy_prog-linux-x64.AppImage` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-linux-x64.AppImage) |
 | 🐧 **Linux (DEB)** | `copy-prog_1.0.0_amd64.deb` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy-prog_1.0.0_amd64.deb) |
 | 🍎 **macOS** | `copy_prog-macos-x64.dmg` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-macos-x64.dmg) |
 
@@ -30,15 +30,17 @@
 2. Распакуйте архив в любую папку
 3. Запустите `copy_prog.exe`
 
-🐧 **Linux (tar.gz):**
+🐧 **Linux (AppImage) — рекомендуется:**
 ```bash
-tar xzf copy_prog-linux-x64.tar.gz
-chmod +x copy_prog
-./copy_prog
+wget https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-linux-x64.AppImage
+chmod +x copy_prog-linux-x64.AppImage
+./copy_prog-linux-x64.AppImage
 ```
+*Один файл, работает на любом Linux, иконка в меню приложений*
 
-🐧 **Linux (DEB):**
+🐧 **Linux (DEB) — Ubuntu/Debian:**
 ```bash
+wget https://github.com/Mexikk/copy-prog/releases/latest/download/copy-prog_1.0.0_amd64.deb
 sudo dpkg -i copy-prog_1.0.0_amd64.deb
 copy_prog
 ```
