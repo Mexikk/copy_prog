@@ -27,6 +27,22 @@ copyright = "Copyright © 2026 M. Mikh. Mir"
 category = "Developer Tool"
 short_description = "Сбор файлов из монорепозитория в единый документ"
 
+[package.metadata.deb]
+maintainer = "M. Mikh. Mir"
+copyright = "2026, M. Mikh. Mir"
+license-file = ["LICENSE", "0"]
+extended-description = """\
+Утилита для сбора файлов из монорепозитория в единый документ.
+Поддерживает мультиязычность (RU/EN/ZH), превью списка файлов и гибкие исключения."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/copy_prog", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/copy_prog/README", "644"],
+    ["LICENSE", "usr/share/doc/copy_prog/LICENSE", "644"],
+]
+
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
