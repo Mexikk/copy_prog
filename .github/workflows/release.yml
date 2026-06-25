@@ -25,7 +25,7 @@ jobs:
           name: windows-build
           path: copy_prog-windows-x64.zip
 
-  # === СБОРКА ДЛЯ LINUX ===
+  # === СБОРКА ДЛЯ LINUX (tar.gz + .deb) ===
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -41,7 +41,10 @@ jobs:
       - name: Build binary
         run: cargo build --release
       - name: Build .deb package
-        run: cargo deb --no-build
+        run: |
+          cargo deb --no-build --no-strip
+          echo "--- DEB files created ---"
+          ls -la target/debian/
       - name: Create tar.gz archive
         run: |
           mkdir -p release-linux
@@ -120,6 +123,7 @@ jobs:
           cp linux-build/*.tar.gz release-files/ 2>/dev/null || true
           cp macos-build/*.dmg release-files/ 2>/dev/null || true
           cp macos-build/*.tar.gz release-files/ 2>/dev/null || true
+          echo "--- Files to release ---"
           ls -la release-files/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
