@@ -18,16 +18,36 @@
 
 | ОС | Файл | Ссылка |
 |----|------|--------|
-| 🪟 **Windows** | `copy_prog-v1.0.0-windows-x64.zip` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest) |
-| 🐧 **Linux (AppImage)** | `copy_prog-linux-x64.AppImage` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest) |
-| 🐧 **Linux (DEB)** | `copy_prog_1.0.0_amd64.deb` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest) |
-| 🍎 **macOS** | `copy_prog-macos-x64.dmg` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest) |
+| 🖥️ **Windows** | `copy_prog-windows-x64.zip` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-windows-x64.zip) |
+| 🐧 **Linux (tar.gz)** | `copy_prog-linux-x64.tar.gz` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-linux-x64.tar.gz) |
+| 🐧 **Linux (DEB)** | `copy-prog_1.0.0_amd64.deb` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy-prog_1.0.0_amd64.deb) |
+| 🍎 **macOS** | `copy_prog-macos-x64.dmg` | [Скачать](https://github.com/Mexikk/copy-prog/releases/latest/download/copy_prog-macos-x64.dmg) |
 
 **Как использовать:**
-1. Скачайте архив для вашей ОС
-2. Распакуйте его в любую папку
-3. Запустите `copy_prog.exe` (Windows) или `./copy_prog` (Linux/macOS)
-4. Готово! Программа не требует установки и работает "из коробки"
+
+🪟 **Windows:**
+1. Скачайте `copy_prog-windows-x64.zip`
+2. Распакуйте архив в любую папку
+3. Запустите `copy_prog.exe`
+
+🐧 **Linux (tar.gz):**
+```bash
+tar xzf copy_prog-linux-x64.tar.gz
+chmod +x copy_prog
+./copy_prog
+```
+
+🐧 **Linux (DEB):**
+```bash
+sudo dpkg -i copy-prog_1.0.0_amd64.deb
+copy_prog
+```
+
+🍎 **macOS:**
+1. Скачайте `copy_prog-macos-x64.dmg`
+2. Откройте DMG двойным кликом
+3. Перетащите `Copy_prog.app` в папку Applications
+4. Запустите из Launchpad
 
 > 💡 **Совет для Windows:** Добавьте папку с `copy_prog.exe` в системную переменную `PATH`, чтобы запускать программу из любого места в терминале.
 
