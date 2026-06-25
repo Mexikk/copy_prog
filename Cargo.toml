@@ -1,0 +1,45 @@
+[package]
+name = "copy_prog"
+version = "1.0.0"
+edition = "2021"
+authors = ["M. Mikh. Mir"]
+description = "Утилита для сбора файлов из монорепозитория в единый документ"
+license = "MIT"
+repository = "https://github.com/Mexikk/copy-prog"
+homepage = "https://github.com/Mexikk/copy-prog"
+readme = "README.md"
+keywords = ["cli", "code", "monorepo", "copy"]
+categories = ["command-line-utilities", "development-tools"]
+build = "build.rs"
+
+[package.metadata.bundle]
+name = "Copy_prog"
+identifier = "com.mirmikh.copy-prog"
+icon = [
+    "icons/icon-16.png",
+    "icons/icon-32.png",
+    "icons/icon-128.png",
+    "icons/icon-256.png",
+    "icons/icon-512.png"
+]
+version = "1.0.0"
+copyright = "Copyright © 2026 M. Mikh. Mir"
+category = "Developer Tool"
+short_description = "Сбор файлов из монорепозитория в единый документ"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "5.0"
+walkdir = "2.5"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_System_Console",
+    "Win32_Foundation",
+    "Win32_Globalization"
+]}
+
+[build-dependencies]
+winres = "0.1"

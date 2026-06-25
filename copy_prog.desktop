@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Copy_prog
+Comment=Утилита для сбора файлов из монорепозитория
+Exec=copy_prog
+Icon=copy_prog
+Terminal=true
+Type=Application
+Categories=Development;Utility;

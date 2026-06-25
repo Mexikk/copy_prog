@@ -1,0 +1,168 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # === СБОРКА ДЛЯ WINDOWS ===
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build Windows .exe
+        run: cargo build --release
+      
+      - name: Create ZIP archive
+        shell: pwsh
+        run: |
+          Compress-Archive -Path target/release/copy_prog.exe -DestinationPath copy_prog-windows-x64.zip
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: copy_prog-windows-x64.zip
+
+  # === СБОРКА ДЛЯ LINUX ===
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev pkg-config
+      
+      - name: Install cargo-deb
+        run: cargo install cargo-deb cargo-generate-rpm
+      
+      - name: Build binary
+        run: cargo build --release
+      
+      - name: Build .deb package
+        run: cargo deb --no-build
+      
+      - name: Create AppImage
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          
+          mkdir -p copy_prog.AppDir/usr/bin
+          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/16x16/apps
+          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/32x32/apps
+          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/48x48/apps
+          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/128x128/apps
+          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p copy_prog.AppDir/usr/share/applications
+          
+          cp target/release/copy_prog copy_prog.AppDir/usr/bin/
+          cp icons/icon-16.png copy_prog.AppDir/usr/share/icons/hicolor/16x16/apps/copy_prog.png
+          cp icons/icon-32.png copy_prog.AppDir/usr/share/icons/hicolor/32x32/apps/copy_prog.png
+          cp icons/icon-48.png copy_prog.AppDir/usr/share/icons/hicolor/48x48/apps/copy_prog.png 2>/dev/null || true
+          cp icons/icon-128.png copy_prog.AppDir/usr/share/icons/hicolor/128x128/apps/copy_prog.png
+          cp icons/icon-256.png copy_prog.AppDir/usr/share/icons/hicolor/256x256/apps/copy_prog.png
+          
+          cat > copy_prog.AppDir/copy_prog.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Copy_prog
+          Comment=Утилита для сбора файлов из монорепозитория
+          Exec=copy_prog
+          Icon=copy_prog
+          Terminal=true
+          Type=Application
+          Categories=Development;Utility;
+          EOF
+          
+          ./linuxdeploy-x86_64.AppImage --appdir copy_prog.AppDir --output appimage
+          mv Copy_prog*.AppImage copy_prog-linux-x64.AppImage 2>/dev/null || mv copy_prog*.AppImage copy_prog-linux-x64.AppImage
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            target/debian/*.deb
+            copy_prog-linux-x64.AppImage
+
+  # === СБОРКА ДЛЯ MACOS ===
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-bundle
+        run: cargo install cargo-bundle
+      
+      - name: Build binary
+        run: cargo build --release
+      
+      - name: Create .icns from PNGs
+        run: |
+          mkdir icon.iconset
+          sips -z 16 16 icons/icon-16.png --out icon.iconset/icon_16x16.png
+          sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 icons/icon-32.png --out icon.iconset/icon_32x32.png
+          sips -z 64 64 icons/icon-128.png --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 icons/icon-128.png --out icon.iconset/icon_128x128.png
+          sips -z 256 256 icons/icon-256.png --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 icons/icon-256.png --out icon.iconset/icon_256x256.png
+          sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 icons/icon-512.png --out icon.iconset/icon_512x512.png
+          iconutil -c icns icon.iconset
+          mkdir -p target/release/bundle/osx/Copy_prog.app/Contents/Resources
+          cp icon.icns target/release/bundle/osx/Copy_prog.app/Contents/Resources/
+      
+      - name: Build .app bundle
+        run: cargo bundle --release
+      
+      - name: Create DMG installer
+        run: |
+          hdiutil create -volname "Copy_prog" -srcfolder target/release/bundle/osx/Copy_prog.app -ov -format UDZO copy_prog-macos-x64.dmg
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: copy_prog-macos-x64.dmg
+
+  # === СОЗДАНИЕ РЕЛИЗА ===
+  release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Prepare release files
+        run: |
+          mkdir release-files
+          cp windows-build/*.zip release-files/
+          cp linux-build/*.deb release-files/ 2>/dev/null || true
+          cp linux-build/*.AppImage release-files/ 2>/dev/null || true
+          cp macos-build/*.dmg release-files/
+          ls -la release-files/
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-files/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
