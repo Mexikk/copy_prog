@@ -129,8 +129,8 @@ jobs:
         run: |
           mkdir release-files
           cp windows-build/*.zip release-files/
-          cp linux-build/*.deb release-files/ 2>/dev/null || true
-          cp linux-build/*.AppImage release-files/ 2>/dev/null || true
+          cp linux-build/*.deb release-files/
+          cp linux-build/*.tar.gz release-files/
           cp macos-build/*.dmg release-files/
           ls -la release-files/
       
