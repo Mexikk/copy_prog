@@ -40,71 +40,23 @@ jobs:
         run: cargo install cargo-deb
       - name: Build binary
         run: cargo build --release
-      
       - name: Build .deb package
         run: cargo deb --no-build
-      
-      - name: Create AppImage with icons
+      - name: Create tar.gz archive
         run: |
-          # Скачиваем linuxdeploy и плагины
-          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-plugin-appimage-x86_64.AppImage
-          
-          # Создаём структуру AppDir
-          mkdir -p copy_prog.AppDir/usr/bin
-          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/16x16/apps
-          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/32x32/apps
-          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/48x48/apps
-          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/128x128/apps
-          mkdir -p copy_prog.AppDir/usr/share/icons/hicolor/256x256/apps
-          
-          # Копируем бинарник
-          cp target/release/copy_prog copy_prog.AppDir/usr/bin/
-          
-          # Копируем иконки разных размеров в hicolor
-          [ -f icons/icon-16.png ] && cp icons/icon-16.png copy_prog.AppDir/usr/share/icons/hicolor/16x16/apps/copy_prog.png
-          [ -f icons/icon-32.png ] && cp icons/icon-32.png copy_prog.AppDir/usr/share/icons/hicolor/32x32/apps/copy_prog.png
-          [ -f icons/icon-48.png ] && cp icons/icon-48.png copy_prog.AppDir/usr/share/icons/hicolor/48x48/apps/copy_prog.png
-          [ -f icons/icon-128.png ] && cp icons/icon-128.png copy_prog.AppDir/usr/share/icons/hicolor/128x128/apps/copy_prog.png
-          [ -f icons/icon-256.png ] && cp icons/icon-256.png copy_prog.AppDir/usr/share/icons/hicolor/256x256/apps/copy_prog.png
-          
-          # ⭐ ВАЖНО: Копируем иконку в КОРЕНЬ AppDir (требует appimagetool)
-          cp icons/icon-256.png copy_prog.AppDir/copy_prog.png
-          
-          # Создаём .desktop файл
-          cat > copy_prog.AppDir/copy_prog.desktop << 'EOF'
-[Desktop Entry]
-Name=Copy_prog
-Comment=Утилита для сбора файлов из монорепозитория
-Exec=copy_prog
-Icon=copy_prog
-Terminal=true
-Type=Application
-Categories=Utility;
-EOF
-          
-          # Собираем AppImage с явным указанием файлов
-          ./linuxdeploy-x86_64.AppImage \
-            --appdir copy_prog.AppDir \
-            --plugin appimage \
-            --desktop-file=copy_prog.AppDir/copy_prog.desktop \
-            --icon-file=copy_prog.AppDir/copy_prog.png \
-            --output appimage
-          
-          # Переименовываем результат
-          ls -la *.AppImage
-          mv Copy_prog*.AppImage copy_prog-linux-x64.AppImage 2>/dev/null || \
-          mv copy_prog*.AppImage copy_prog-linux-x64.AppImage 2>/dev/null || true
-      
+          mkdir -p release-linux
+          cp target/release/copy_prog release-linux/
+          cp README.md release-linux/ 2>/dev/null || true
+          cp LICENSE release-linux/ 2>/dev/null || true
+          cd release-linux
+          tar czf ../copy_prog-linux-x64.tar.gz *
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: |
             target/debian/*.deb
-            copy_prog-linux-x64.AppImage
+            copy_prog-linux-x64.tar.gz
 
   # === СБОРКА ДЛЯ MACOS ===
   build-macos:
@@ -165,7 +117,7 @@ EOF
           mkdir -p release-files
           cp windows-build/*.zip release-files/ 2>/dev/null || true
           cp linux-build/*.deb release-files/ 2>/dev/null || true
-          cp linux-build/*.AppImage release-files/ 2>/dev/null || true
+          cp linux-build/*.tar.gz release-files/ 2>/dev/null || true
           cp macos-build/*.dmg release-files/ 2>/dev/null || true
           cp macos-build/*.tar.gz release-files/ 2>/dev/null || true
           ls -la release-files/
