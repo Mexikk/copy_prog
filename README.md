@@ -244,9 +244,9 @@ copy_prog
 
 ### 🇷🇺 Для пользователей из России
 
-[![Boosty](https://img.shields.io/badge/Boosty-Сбор_средств-orange?style=for-the-badge&logo=boosty)](https://boosty.to/mexikk)
+[![Boosty](https://img.shields.io/badge/Boosty-Поддержать-orange?style=for-the-badge&logo=boosty)](https://boosty.to/mexikk)
 
-[![ЮMoney](https://img.shields.io/badge/ЮMoney-Сбор_средств-yellow?style=for-the-badge&logo=yoomoney)](https://yoomoney.ru/fundraise/1IJVT8ODKHK.260625)
+[![ЮMoney](https://img.shields.io/badge/ЮMoney-Поддержать-yellow?style=for-the-badge&logo=yoomoney)](https://yoomoney.ru/fundraise/1IJVT8ODKHK.260625)
 
 [![CloudTips](https://img.shields.io/badge/CloudTips-Поддержать-blue?style=for-the-badge)](https://pay.cloudtips.ru/p/e8b4f667)
 
